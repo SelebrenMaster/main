@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Profile | Ambient</title>
+    <style>
+        :root {
+            --bg-color: #e8dfd5;
+            --surface: #f2ebe1;
+            --text-main: #4a443f;
+            --text-muted: #8c837a;
+            --accent: #c4b3a3;
+            --shadow-dark: rgba(0, 0, 0, 0.12);
+            --shadow-light: rgba(255, 255, 255, 0.8);
+            --active-color: #a8d5ba; /* Light green from screenshot */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Grain */
+        .grain {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.04;
+            background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+        }
+
+        /* Layout Container */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 40px;
+            width: 95%;
+            max-width: 1200px;
+            padding: 40px;
+            background: var(--surface);
+            border-radius: 48px;
+            box-shadow: 
+                30px 30px 60px var(--shadow-dark),
+                -30px -30px 60px var(--shadow-light);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Left Panel (Profile) */
+        .profile-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            padding-right: 40px;
+        }
+
+        .profile-pic {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 24px;
+            border: 8px solid var(--bg-color);
+            box-shadow: 
+                inset 0 0 15px var(--shadow-dark),
+                0 15px 30px var(--shadow-dark);
+        }
+
+        h1 { font-size: 28px; margin: 0 0 10px 0; font-weight: 600; }
+        .subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 40px; line-height: 1.4; }
+
+        /* Right Panel (Components) */
+        .controls-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            align-content: start;
+        }
+
+        .component-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+            background: var(--bg-color);
+            border-radius: 24px;
+            box-shadow: inset 4px 4px 10px var(--shadow-dark), inset -4px -4px 10px var(--shadow-light);
+        }
+
+        .group-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        /* --- AMBIENT COMPONENTS --- */
+
+        /* 1. Knobs/Dials */
+        .knob-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .knob {
+            width: 60px;
+            height: 60px;
+            background: var(--surface);
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 
+                4px 4px 8px var(--shadow-dark),
+                -4px -4px 8px var(--shadow-light);
+            transition: transform 0.1s linear;
+        }
+
+        .knob::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            width: 4px;
+            height: 12px;
+            background: var(--text-main);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .knob-indicator {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            left: -10px; top: -10px;
+            pointer-events: none;
+        }
+
+        /* 2. Buttons */
+        .btn-row { display: flex; gap: 15px; justify-content: center; }
+        
+        .amb-btn {
+            padding: 10px 24px;
+            background: var(--surface);
+            border: none;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 
+                4px 4px 8px var(--shadow-dark),
+                -4px -4px 8px var(--shadow-light);
+            transition: all 0.2s ease;
+            font-family: inherit;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .amb-btn:active {
+            box-shadow: 
+                inset 2px 2px 5px var(--shadow-dark),
+                inset -2px -2px 5px var(--shadow-light);
+            transform: scale(0.98);
+        }
+
+        .amb-btn.fx {
+            width: 60px;
+            height: 60px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 3. Toggles */
+        .toggle-row { display: flex; justify-content: center; gap: 30px; }
+        
+        .toggle {
+            width: 50px;
+            height: 26px;
+            background: #d1cdc7;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+            transition: background 0.3s ease;
+        }
+
+        .toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--surface);
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 2px 2px 5px var(--shadow-dark);
+        }
+
+        .toggle.active { background: var(--active-color); }
+        .toggle.active::before { transform: translateX(24px); }
+
+        /* 4. Segmented Control */
+        .segmented-control {
+            display: flex;
+            background: var(--bg-color);
+            padding: 5px;
+            border-radius: 15px;
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+            justify-content: center;
+        }
+
+        .segment {
+            padding: 8px 20px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .segment.active {
+            background: var(--surface);
+            box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+            color: var(--text-main);
+        }
+
+        /* 5. Vertical Slider */
+        .fader-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .fader-track {
+            width: 6px;
+            height: 120px;
+            background: var(--bg-color);
+            border-radius: 3px;
+            box-shadow: inset 1px 1px 3px var(--shadow-dark);
+            position: relative;
+        }
+
+        .fader-thumb {
+            width: 24px;
+            height: 36px;
+            background: var(--surface);
+            border-radius: 6px;
+            position: absolute;
+            left: -9px;
+            top: 40px;
+            cursor: pointer;
+            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <div class="dashboard">
+        <!-- Left Panel -->
+        <div class="profile-panel">
+            <img src="C:/Users/Selebren/Desktop/c570158b-df85-4cc2-947c-1999bb8dffdb.png" alt="Profile" class="profile-pic">
+            <h1>Ваше Имя</h1>
+            <p class="subtitle">AI Researcher & Digital Architect<br>Эксперименты с физикой интерфейсов</p>
+            
+            <div class="segmented-control">
+                <div class="segment active" onclick="setSegment(this)">О себе</div>
+                <div class="segment" onclick="setSegment(this)">Работы</div>
+                <div class="segment" onclick="setSegment(this)">Связь</div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="controls-panel">
+            
+            <!-- Knobs Group -->
+            <div class="component-group">
+                <div class="group-label">Ambient Controls</div>
+                <div class="knob-container">
+                    <div class="knob" id="knob1"></div>
+                    <div class="knob" id="knob2"></div>
+                </div>
+            </div>
+
+            <!-- Buttons Group -->
+            <div class="component-group">
+                <div class="group-label">Actions</div>
+                <div class="btn-row">
+                    <button class="amb-btn">Button</button>
+                    <button class="amb-btn fx">FX</button>
+                </div>
+            </div>
+
+            <!-- Toggles Group -->
+            <div class="component-group">
+                <div class="group-label">Settings</div>
+                <div class="toggle-row">
+                    <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                </div>
+            </div>
+
+            <!-- Vertical Fader Group -->
+            <div class="component-group">
+                <div class="group-label">Intensity</div>
+                <div class="fader-container">
+                    <div class="fader-track">
+                        <div class="fader-thumb" id="fader"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Segment Control Logic
+        function setSegment(el) {
+            document.querySelectorAll('.segment').forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Knob Rotation Logic
+        function setupKnob(id) {
+            const knob = document.getElementById(id);
+            let isDragging = false;
+            let startY = 0;
+            let currentRotation = 0;
+
+            knob.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startY = e.clientY;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaY = startY - e.clientY;
+                currentRotation += deltaY * 2;
+                knob.style.transform = `rotate(${currentRotation}deg)`;
+                startY = e.clientY;
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        setupKnob('knob1');
+        setupKnob('knob2');
+
+        // Fader Logic
+        const fader = document.getElementById('fader');
+        let isFading = false;
+
+        fader.addEventListener('mousedown', () => isFading = true);
+        window.addEventListener('mouseup', () => isFading = false);
+        window.addEventListener('mousemove', (e) => {
+            if (!isFading) return;
+            const track = document.querySelector('.fader-track');
+            const rect = track.getBoundingClientRect();
+            let y = e.clientY - rect.top - 18;
+            y = Math.max(0, Math.min(y, rect.height - 36));
+            fader.style.top = y + 'px';
+        });
+    </script>
+</body>
+</html>
