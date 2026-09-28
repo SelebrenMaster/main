@@ -73,7 +73,7 @@
             height: 6px;
             border-radius: 50%;
             background: var(--active-color);
-            box-shadow: 0, 0 4px var(--active-color);
+            box-shadow: 0 0 4px var(--active-color);
             animation: blink 2s infinite;
         }
 
@@ -170,6 +170,9 @@
             font-weight: 600;
             border-bottom: 1px solid var(--accent);
             transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .content-display a:hover {
@@ -263,9 +266,21 @@
         }
 
         .toggle-text.visible {
-            max-height: 100px;
+            max-height: 120px;
             opacity: 1;
             margin-top: 5px;
+        }
+
+        .toggle-text a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .toggle-text a:hover {
+            color: var(--active-color);
+            border-bottom-color: var(--active-color);
         }
 
     </style>
@@ -309,11 +324,10 @@
                 <div class="toggle-container">
                     <div class="toggle-item">
                         <div class="toggle" onclick="toggleText(this)"></div>
-                        <div class="toggle-text">Дополнительная информация о профиле активирована.</div>
-                    </div>
-                    <div class="toggle-item">
-                        <div class="toggle" onclick="toggleText(this)"></div>
-                        <div class="toggle-text">Режим отображения скрытых проектов включен.</div>
+                        <div class="toggle-text">
+                            Дополнительная информация о профиле активирована.<br>
+                            Ссылка на моё резюме в <a href="https://novosibirsk.hh.ru/resume/e511df4bff08cd1a080039ed1f4370694b724e?hhtmFrom=applicant_profile&print=true" target="_blank">HH</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -324,7 +338,7 @@
         const contents = {
             about: "Администратор систем, сервисов, проектов и чужих душ",
             works: '<a href="https://github.com/SelebrenMaster/SMB-Downloader-v3" target="_blank">SMB-Downloader v3</a>',
-            contact: '<a href="https://t.me/Selebren" target="_blank">t.me/Selebren</a>'
+            contact: '<a href="https://t.me/Selebren" target="_blank">Telegram</a>'
         };
 
         async function fetchIP() {
